@@ -1,5 +1,9 @@
 Revision history for Algorithm::SetCovering:
 
+0.04 11/22/2003
+    (ms) Added comment by Julien Gervais-Bird 
+         <j.bird@usherbrooke.ca> on limits of greedy algorithm
+
 0.03 06/07/2003
     (ms) Fixed perl 5.006 dependency according to report at
          https://rt.cpan.org/Ticket/Display.html?id=2660
