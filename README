@@ -1,38 +1,118 @@
-Algorithm/SetCover version 0.01
-===============================
+######################################################################
+    Algorithm::SetCovering 0.01
+######################################################################
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+NAME
+    Algorithm::SetCovering - A brute-force implementation for the "set
+    covering problem"
 
-A README file is required for CPAN modules since CPAN extracts the
-README file from a module distribution so that people browsing the
-archive can use it get an idea of the modules uses. It is usually a
-good idea to provide version information here so that people can
-decide whether fixes for the module are worth downloading.
+SYNOPSIS
+        use Algorithm::SetCovering;
 
-INSTALLATION
+        my $alg = Algorithm::SetCovering->new(
+            columns => 4,
+            mode    => "brute_force");
 
-To install this module type the following:
+        $alg->add_row(1, 0, 1, 0);
+        $alg->add_row(1, 1, 0, 0);
+        $alg->add_row(1, 1, 1, 0);
+        $alg->add_row(0, 1, 0, 1);
+        $alg->add_row(0, 0, 1, 1);
 
-   perl Makefile.PL
-   make
-   make test
-   make install
+        my @to_be_opened = (@ARGV || (1, 1, 1, 1));
+    
+        my @set = $alg->min_row_set(@to_be_opened);
+    
+        print "To open (@to_be_opened), we need ",
+              scalar @set, " keys:\n";
 
-DEPENDENCIES
+        for(@set) {
+            print "$_: ", join('-', $alg->row($_)), "\n";
+        }
 
-This module requires these other modules and libraries:
+DESCRIPTION
+    Consider having M keys and N locks. Every key opens one or more locks:
 
-  blah blah blah
+             | lock1 lock2 lock3 lock4
+        -----+------------------------
+        key1 |   x           x
+        key2 |   x     x
+        key3 |   x     x     x
+        key4 |         x           x
+        key5 |               x     x
 
-COPYRIGHT AND LICENCE
+    Given an arbitrary set of locks you have to open (e.g. 2,3,4), the task
+    is to find a minimal set of keys to accomplish this. In the example
+    above, the set [key4, key5] fulfils that condition.
 
-Put the correct copyright and licence information here.
+    The underlying problem is called "set covering problem" and the
+    corresponding decision problem is NP-complete.
 
-Copyright (C) 2003 Mike
+  Methods
+    $alg = Algorithm::SetCovering->new(columns => $cols, [mode => $mode]);
+        Create a new Algorithm::SetCovering object. The mandatory parameer
+        "columns" needs to be set to the number of columns in the matrix
+        (the number of locks in the introductory example).
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. 
+        "mode" is optional and defaults to "brute_force" which is currently
+        the only method implemented.
+
+    $alg->add_row(@columns)
+        Add a new row to the matrix. In the example above, this adds one key
+        and specifies which locks it is able to open.
+
+            $alg->add_row(1,0,0,1);
+
+        specifies that the new key can open locks #1 and #4.
+
+        The number of elements in @columns needs to match the previously
+        defined number of columns.
+
+    $alg->min_row_set(@columns_to_cover)
+        Determines a minimal set of keys to cover a given set of locks.
+
+        Defines which columns have to be covered passing in an array with
+        true values on element positions that need to be covered.
+
+            my @idx_set = $alg->min_row_set(1,1,0,1);
+
+        specifies that all but the third column have to be covered and
+        returns an array of index numbers into the previously via add_row()
+        successively defined number of rows (keys).
+
+        If no set of keys can be found that satisfies the given requirement,
+        an empty list is returned.
+
+  Strategies
+    Currently, the module just implements a dumb brute force method,
+    creating all possible combinations of keys, sorting them by the number
+    of keys used (combinations with fewer keys have priority) and trying for
+    each of them if it fits the requirement of opening a given number of
+    locks.
+
+    This obviously won't scale beyond a really small number of keys (N),
+    because the number of permutations will be 2**N-2.
+
+  Future Ideas
+    One simple way of improving would be to throw out keys that are subsets
+    of other keys during the preparation phase.
+
+    To speed up the comparisons during the evaluation phase, we could use
+    bitwise comparisons, but this will limit the algorithm to 64 keys (on a
+    64 bit machine).
+
+AUTHOR
+    Mike Schilli, 2003, <m@perlmeister.com>
+
+    Thanks to the friendly guys on rec.puzzles, who provided me with
+    valuable input to analyze the problem:
+
+        Robert Israel <israel@math.ubc.ca>
+        Patrick Hamlyn <path@multipro.n_ocomsp_am.au>
+
+COPYRIGHT AND LICENSE
+    Copyright 2003 by Mike Schilli
+
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
 
