@@ -69,11 +69,12 @@ sub min_row_set {
             next COMBO unless $combo->[0]->[$idx];
         }
             # We found a minimal set, return all of its elements 
+            # (which are idx numbers into the @rows array)
         return @{$combo->[1]};
     }
 
         # Can't find a minimal set
-    return undef;
+    return ();
 }
 
 ##############################################
@@ -201,15 +202,78 @@ In the example above, the set [key4, key5] fulfils that condition.
 The underlying problem is called "set covering problem" and
 the corresponding decision problem is NP-complete.
 
+=head2 Methods
+
+=over 4
+
+=item $alg = Algorithm::SetCovering->new(columns => $cols, [mode => $mode]);
+
+Create a new Algorithm::SetCovering object. The mandatory parameer
+C<columns> needs to be set to the number of columns in the matrix
+(the number of locks in the introductory example).
+
+C<mode> is optional and defaults to C<brute_force> which is currently
+the only method implemented.
+
+=item $alg->add_row(@columns)
+
+Add a new row to the matrix. In the example above, this adds one key
+and specifies which locks it is able to open. 
+
+    $alg->add_row(1,0,0,1);
+
+specifies that the new key can open locks #1 and #4.
+
+The number of elements
+in @columns needs to match the previously defined number of columns.
+
+=item $alg->min_row_set(@columns_to_cover)
+
+Determines a minimal set of keys to cover a given set of locks.
+
+Defines which columns have to be covered passing in an array
+with true values on element positions that need to be covered.
+
+    my @idx_set = $alg->min_row_set(1,1,0,1);
+
+specifies that all but the third column have to be covered and returns
+an array of index numbers into the previously via add_row()
+successively defined number of rows (keys).
+
+If no set of keys can be found that satisfies the given requirement,
+an empty list is returned.
+
+=back
+
+=head2 Strategies
+
+Currently, the module just implements a dumb brute force method, 
+creating all possible combinations of keys, sorting them by 
+the number of keys used (combinations with fewer keys have priority)
+and trying for each of them if it fits the requirement of opening
+a given number of locks.
+
+This obviously won't scale beyond a really small number of keys (N), 
+because the number of permutations will be 2**N-2.
+
+=head2 Future Ideas
+
+One simple way of improving would be to throw out keys that are
+subsets of other keys during the preparation phase.
+
+To speed up the comparisons during the evaluation phase, we
+could use bitwise comparisons, but this will limit the algorithm
+to 64 keys (on a 64 bit machine).
+
 =head1 AUTHOR
 
 Mike Schilli, 2003, E<lt>m@perlmeister.comE<gt>
 
 Thanks to the friendly guys on rec.puzzles, who provided me with
 valuable input to analyze the problem:
-Robert Israel E<lt>israel@math.ubc.caE<gt>,
-Patrick Hamlyn <path@multipro.n_ocomsp_am.au>,
-and "The Qurqirish Dragon".
+
+    Robert Israel <israel@math.ubc.ca>
+    Patrick Hamlyn <path@multipro.n_ocomsp_am.au>
 
 =head1 COPYRIGHT AND LICENSE
 
