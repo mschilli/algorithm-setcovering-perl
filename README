@@ -1,17 +1,16 @@
 ######################################################################
-    Algorithm::SetCovering 0.01
+    Algorithm::SetCovering 0.02
 ######################################################################
 
 NAME
-    Algorithm::SetCovering - A brute-force implementation for the "set
-    covering problem"
+    Algorithm::SetCovering - Algorithms to solve the "set covering problem"
 
 SYNOPSIS
         use Algorithm::SetCovering;
 
         my $alg = Algorithm::SetCovering->new(
             columns => 4,
-            mode    => "brute_force");
+            mode    => "greedy");
 
         $alg->add_row(1, 0, 1, 0);
         $alg->add_row(1, 1, 0, 0);
@@ -50,12 +49,22 @@ DESCRIPTION
 
   Methods
     $alg = Algorithm::SetCovering->new(columns => $cols, [mode => $mode]);
-        Create a new Algorithm::SetCovering object. The mandatory parameer
+        Create a new Algorithm::SetCovering object. The mandatory parameter
         "columns" needs to be set to the number of columns in the matrix
         (the number of locks in the introductory example).
 
-        "mode" is optional and defaults to "brute_force" which is currently
-        the only method implemented.
+        "mode" is optional and selects an algorithm for finding the
+        solution. The following values for "mode" are implemented:
+
+        "brute_force"
+            Will iterate over all permutations of keys. Only recommended for
+            very small numbers of keys.
+
+        "greedy"
+            Greedy algorithm. Scales O(mn^2). Can't do much better for a
+            NP-hard problem.
+
+        The default for "mode" is set to "greedy".
 
     $alg->add_row(@columns)
         Add a new row to the matrix. In the example above, this adds one key
@@ -94,29 +103,25 @@ DESCRIPTION
         parameters we've passed on to the add_row() command previously.
 
   Strategies
-    Currently, the module just implements a dumb brute force method,
-    creating all possible combinations of keys, sorting them by the number
-    of keys used (combinations with fewer keys have priority) and trying for
-    each of them if it fits the requirement of opening a given number of
-    locks.
+    Currently, the module implements the Greedy algorithm and also (just for
+    scientific purposes) a dumb brute force method, creating all possible
+    combinations of keys, sorting them by the number of keys used
+    (combinations with fewer keys have priority) and trying for each of them
+    if it fits the requirement of opening a given number of locks.
 
     This obviously won't scale beyond a really small number of keys (N),
     because the number of permutations will be 2**N-2.
 
-  Future Ideas
-    One simple way of improving would be to throw out keys that are subsets
-    of other keys during the preparation phase.
-
-    To speed up the comparisons during the evaluation phase, we could use
-    bitwise comparisons, but this will limit the algorithm to 64 keys (on a
-    64 bit machine).
+    The Greedy Algorithm, on the other hand scales with O(mn^2), with m
+    being the number of keys and n being the number of locks.
 
 AUTHOR
     Mike Schilli, 2003, <m@perlmeister.com>
 
     Thanks to the friendly guys on rec.puzzles, who provided me with
-    valuable input to analyze the problem:
+    valuable input to analyze the problem and explained the algorithm:
 
+        Craig <c_quest000@yahoo.com>
         Robert Israel <israel@math.ubc.ca>
         Patrick Hamlyn <path@multipro.n_ocomsp_am.au>
 
