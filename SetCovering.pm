@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Log::Log4perl qw(:easy);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 ##################################################
 sub new {
@@ -17,7 +17,7 @@ sub new {
         unless exists $options{columns};
 
     my $self = {
-        mode     => "brute_force",
+        mode     => "greedy",
         @options,
         rows     => [],
         prepared => 0,
@@ -57,7 +57,21 @@ sub min_row_set {
 ##############################################
     my($self, @columns_to_cover) = @_;
 
-    $self->prepare() unless $self->{prepared};
+    if($self->{mode} eq "brute_force") {
+        return brute_force_run(@_);
+    } elsif($self->{mode} eq "greedy") {
+        return greedy_run(@_);
+    } else {
+        die "$self->{mode} not implemented\n";
+    }
+}
+
+##############################################
+sub brute_force_run {
+##############################################
+    my($self, @columns_to_cover) = @_;
+
+    $self->brute_force_prepare() unless $self->{prepared};
 
     COMBO:
     for my $combo (@{$self->{combos}}) {
@@ -78,7 +92,7 @@ sub min_row_set {
 }
 
 ##############################################
-sub prepare {
+sub brute_force_prepare {
 ##############################################
 # Create data structures for fast lookups
 ##############################################
@@ -150,13 +164,70 @@ sub bitcount {
     return $count ;
 }
 
+##############################################
+sub greedy_run {
+##############################################
+    my($self, @columns_to_cover) = @_;
+
+    my @hashed_rows    = ();
+    my %column_hash    = ();
+    my @result         = ();
+
+    for(my $i=0; $i<@columns_to_cover; $i++) {
+        $column_hash{$i} = 1 if $columns_to_cover[$i];
+    }
+
+    for my $row (@{$self->{rows}}) {
+        my $rowhash = {};
+        for(my $i=0; $i<@columns_to_cover; $i++) {
+            $rowhash->{$i}++ if $columns_to_cover[$i] and $row->[$i];
+        }
+        push @hashed_rows, $rowhash;
+        DEBUG("Hash of idx (", join('-', keys %$rowhash), ")");
+    }
+
+    my %not_covered = %column_hash;
+
+    do {
+            # Get the longest list
+        my $max_len  = 0;
+        my @max_keys = ();
+        my $max_idx  = 0;
+        for my $idx (0..$#hashed_rows) {
+            my $row = $hashed_rows[$idx];
+            my @keys = keys %$row;
+            if(scalar @keys > $max_len) {
+                @max_keys = @keys;
+                $max_len  = scalar @keys;
+                $max_idx  = $idx;
+            }
+        }
+  
+        DEBUG("Removing max_keys: @max_keys");
+
+        delete $not_covered{$_} for @max_keys;
+        push @result, $max_idx;
+
+            # Remove max_keys columns from all keys
+        foreach my $row (@hashed_rows) {
+            delete $row->{$_} for @max_keys;
+            DEBUG("Remain (", join('-', keys %$row), ")");
+        }
+ 
+        DEBUG("Not covered: (", join('-', keys %not_covered), ")");
+        
+    } while(scalar keys %not_covered);
+
+    return @result;
+}
+    
 1;
 
 __END__
 
 =head1 NAME
 
-Algorithm::SetCovering - A brute-force implementation for the "set covering problem"
+Algorithm::SetCovering - Algorithms to solve the "set covering problem"
 
 =head1 SYNOPSIS
 
@@ -164,7 +235,7 @@ Algorithm::SetCovering - A brute-force implementation for the "set covering prob
 
     my $alg = Algorithm::SetCovering->new(
         columns => 4,
-        mode    => "brute_force");
+        mode    => "greedy");
 
     $alg->add_row(1, 0, 1, 0);
     $alg->add_row(1, 1, 0, 0);
@@ -208,12 +279,28 @@ the corresponding decision problem is NP-complete.
 
 =item $alg = Algorithm::SetCovering->new(columns => $cols, [mode => $mode]);
 
-Create a new Algorithm::SetCovering object. The mandatory parameer
+Create a new Algorithm::SetCovering object. The mandatory parameter
 C<columns> needs to be set to the number of columns in the matrix
 (the number of locks in the introductory example).
 
-C<mode> is optional and defaults to C<brute_force> which is currently
-the only method implemented.
+C<mode> is optional and selects an algorithm for finding the solution. 
+The following values for C<mode> are implemented:
+
+=over 4
+
+=item "brute_force"
+
+Will iterate over all permutations of keys. Only recommended for
+very small numbers of keys.
+
+=item "greedy"
+
+Greedy algorithm. Scales O(mn^2). Can't do much better for a NP-hard
+problem.
+
+=back
+
+The default for C<mode> is set to "greedy".
 
 =item $alg->add_row(@columns)
 
@@ -258,7 +345,8 @@ add_row() command previously.
 
 =head2 Strategies
 
-Currently, the module just implements a dumb brute force method, 
+Currently, the module implements a the Greedy algorithm and also
+(just for scientific purposes) a dumb brute force method, 
 creating all possible combinations of keys, sorting them by 
 the number of keys used (combinations with fewer keys have priority)
 and trying for each of them if it fits the requirement of opening
@@ -267,22 +355,17 @@ a given number of locks.
 This obviously won't scale beyond a really small number of keys (N), 
 because the number of permutations will be 2**N-2.
 
-=head2 Future Ideas
-
-One simple way of improving would be to throw out keys that are
-subsets of other keys during the preparation phase.
-
-To speed up the comparisons during the evaluation phase, we
-could use bitwise comparisons, but this will limit the algorithm
-to 64 keys (on a 64 bit machine).
+The Greedy Algorithm, on the other hand scales with O(mn^2), with
+m being the number of keys and n being the number of locks.
 
 =head1 AUTHOR
 
 Mike Schilli, 2003, E<lt>m@perlmeister.comE<gt>
 
 Thanks to the friendly guys on rec.puzzles, who provided me with
-valuable input to analyze the problem:
+valuable input to analyze the problem and explained the algorithm:
 
+    Craig <c_quest000@yahoo.com>
     Robert Israel <israel@math.ubc.ca>
     Patrick Hamlyn <path@multipro.n_ocomsp_am.au>
 
