@@ -229,19 +229,30 @@ in @columns needs to match the previously defined number of columns.
 
 =item $alg->min_row_set(@columns_to_cover)
 
-Determines a minimal set of keys to cover a given set of locks.
+Determines a minimal set of keys to cover a given set of locks
+and returns an array of index numbers for those keys.
 
-Defines which columns have to be covered passing in an array
+Defines which columns have to be covered by passing in an array
 with true values on element positions that need to be covered.
+For example,
 
     my @idx_set = $alg->min_row_set(1,1,0,1);
 
 specifies that all but the third column have to be covered and returns
-an array of index numbers into the previously via add_row()
-successively defined number of rows (keys).
+an array of index numbers into an array, defined previously
+(and implicitely) via successive add_row() commands.
 
 If no set of keys can be found that satisfies the given requirement,
 an empty list is returned.
+
+If you've forgotten which locks the key referred to by a certain index number
+can open, use the C<rows()> method to find out:
+
+    my(@opens_locks) = $alg->rows($idx_set[0]);
+
+will give back an array of 0's and 1's, basically returning the
+very parameters we've passed on to the
+add_row() command previously.
 
 =back
 
