@@ -1,4 +1,7 @@
 Revision history for Algorithm::SetCovering:
 
+0.02 05/20/2003
+    (ms) Added Greedy Algorithm
+
 0.01 05/18/2003
     (ms) Where it all began

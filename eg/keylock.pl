@@ -14,7 +14,7 @@ Log::Log4perl->easy_init({level => $INFO,
 
 my $alg = Algorithm::SetCovering->new(
     columns => 4,
-    mode    => "brute_force");
+    mode    => "greedy");
 
 $alg->add_row(1, 0, 1, 0);
 $alg->add_row(1, 1, 0, 0);
