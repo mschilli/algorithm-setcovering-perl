@@ -1,6 +1,6 @@
 Revision history for Algorithm::SetCovering:
 
-0.03 (not yet released)
+0.03 06/07/2003
     (ms) Fixed perl 5.006 dependency according to report at
          https://rt.cpan.org/Ticket/Display.html?id=2660
          Also added dependency on Log::Log4perl 0.27

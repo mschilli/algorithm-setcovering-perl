@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Log::Log4perl qw(:easy);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 ##################################################
 sub new {
