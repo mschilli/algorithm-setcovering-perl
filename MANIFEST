@@ -6,3 +6,4 @@ README
 SetCovering.pm
 eg/keylock.pl
 t/001Basic.t
+t/002Greedy.t
