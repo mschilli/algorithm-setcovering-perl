@@ -1,5 +1,10 @@
 Revision history for Algorithm::SetCovering:
 
+0.03 (not yet release)
+    (ms) Fixed perl 5.006 dependency according to report at
+         https://rt.cpan.org/Ticket/Display.html?id=2660
+         Also added dependency on Log::Log4perl 0.27
+
 0.02 05/20/2003
     (ms) Added Greedy Algorithm
 
