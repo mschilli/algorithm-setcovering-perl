@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Log::Log4perl qw(:easy);
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 ##################################################
 sub new {
@@ -357,6 +357,23 @@ because the number of permutations will be 2**N-2.
 
 The Greedy Algorithm, on the other hand scales with O(mn^2), with
 m being the number of keys and n being the number of locks.
+
+=head2 Limitations
+
+Julien Gervais-Bird E<lt>j.bird@usherbrooke.caE<gt> points out:
+The greedy algorithm does not always return the minimal set of
+keys. Consider this example:
+
+         | lock1 lock2 lock3 lock4 lock5 lock6
+    -----+------------------------------------
+    key1 |   x           x           x
+    key2 |   x     x
+    key3 |               x     x
+    key4 |                           x     x
+
+The minimal set of keys to open all the locks is (key2, key3, key4),
+however the greedy algorithm will return (key1,key2,key3,key4) because
+key1 opens more locks than any other key.
 
 =head1 AUTHOR
 
