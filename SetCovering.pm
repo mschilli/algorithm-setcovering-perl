@@ -202,6 +202,9 @@ sub greedy_run {
                 $max_idx  = $idx;
             }
         }
+
+        # Return empty solution if rows can't cover columns_to_cover
+        return () unless $max_len;
   
         DEBUG("Removing max_keys: @max_keys");
 
