@@ -1,0 +1,7 @@
+Changes
+MANIFEST
+Makefile.PL
+README
+SetCovering.pm
+eg/keylock.pl
+t/001Basic.t
