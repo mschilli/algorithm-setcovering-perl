@@ -345,7 +345,7 @@ add_row() command previously.
 
 =head2 Strategies
 
-Currently, the module implements a the Greedy algorithm and also
+Currently, the module implements the Greedy algorithm and also
 (just for scientific purposes) a dumb brute force method, 
 creating all possible combinations of keys, sorting them by 
 the number of keys used (combinations with fewer keys have priority)
