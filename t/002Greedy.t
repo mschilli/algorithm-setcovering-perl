@@ -1,12 +1,4 @@
-# Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl 1.t'
-
-#########################
-
-# change 'tests => 1' to 'tests => last_test_to_print';
-
-use Test::More qw(no_plan);
-BEGIN { use_ok('Algorithm::SetCovering') };
+use Test::More;
 
 use Algorithm::SetCovering;
 
@@ -57,3 +49,4 @@ $alg->add_row(0, 0, 1, 0);
 my @set = $alg->min_row_set(1, 1, 1, 1);
 is("@set", "", "Bugfix: Endless loop");
 
+done_testing;

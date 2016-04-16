@@ -5,8 +5,7 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-use Test::More tests => 6;
-BEGIN { use_ok('Algorithm::SetCovering') };
+use Test::More;
 
 use Algorithm::SetCovering;
 
@@ -39,3 +38,5 @@ is("@set", "4", "Matching 0 0 1 1");
 #########################
 my @set = $alg->min_row_set(0, 1, 1, 1);
 is("@set", "0 3", "Matching 0 1 1 1");
+
+done_testing;
